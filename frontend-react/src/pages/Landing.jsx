@@ -18,10 +18,10 @@ import {
   User,
 } from "lucide-react";
 
-import Logo from "../components/Logo.jsx";
-import ThemeToggle from "../components/ThemeToggle.jsx";
-
-const REPO_URL = "https://github.com/ProHireNetworks/Ai-Engineer-workshop";
+import SiteFooter from "../components/SiteFooter.jsx";
+import SiteHeader from "../components/SiteHeader.jsx";
+import { useScrollSpy } from "../hooks/useScrollSpy.js";
+import { scrollToSection } from "../lib/scroll.js";
 
 function HeroPreview() {
   return (
@@ -33,7 +33,7 @@ function HeroPreview() {
           <i />
         </span>
         <span className="preview-model">
-          <span className="status-dot status-online" /> Groq LLM
+          <span className="status-dot status-online" /> Indigo.ai
         </span>
         <span className="preview-label">Workspace: Customer support</span>
       </div>
@@ -52,7 +52,7 @@ function HeroPreview() {
           </span>
           <div className="preview-card">
             <div className="preview-card-head">
-              <strong>AI Assistant</strong>
+              <strong>Indigo.ai</strong>
               <span className="intent-badge">Payment issue</span>
               <span className="msg-time">just now</span>
             </div>
@@ -69,15 +69,15 @@ function HeroPreview() {
               <div className="flow-steps">
                 <div>
                   <small>01. Classify</small>
-                  <span>payment_issue · high</span>
+                  <span>Payment issue · high priority</span>
                 </div>
                 <div>
                   <small>02. Validate</small>
-                  <span>Pydantic schema passed</span>
+                  <span>Checked against strict rules</span>
                 </div>
                 <div>
                   <small>03. Respond</small>
-                  <span>Markdown answer + memory</span>
+                  <span>Clear answer with context</span>
                 </div>
               </div>
             </div>
@@ -124,7 +124,7 @@ const FEATURES = [
     icon: History,
     tone: "violet",
     title: "Organized Chat History",
-    text: "Conversations are kept in memory while the server runs. Come back to any chat from the sidebar and the assistant still remembers the context.",
+    text: "Conversations are saved automatically. Come back to any chat from the sidebar and the assistant still remembers the context.",
     visual: (
       <div className="mini-card mini-list">
         <div className="mini-row">
@@ -140,7 +140,7 @@ const FEATURES = [
     icon: Gauge,
     tone: "green",
     title: "Clear Insights",
-    text: "See how each message was understood: intent, risk, priority and an estimated token count, all validated against a strict schema.",
+    text: "See how each message was understood: intent, risk, priority and token usage, all checked against strict rules.",
     visual: (
       <div className="mini-card">
         <div className="mini-meter">
@@ -161,55 +161,49 @@ const FEATURES = [
 ];
 
 const PIPELINE = [
-  { title: "Your message", detail: "Checked: 1–5000 characters" },
-  { title: "Classify", detail: "Groq LLM + Instructor" },
-  { title: "Validate", detail: "Pydantic schema" },
-  { title: "Respond", detail: "Answer with recent history" },
-  { title: "Save", detail: "In-memory chat history" },
+  { title: "Your message", detail: "Ask in plain words" },
+  { title: "Understand", detail: "Intent, risk and priority detected" },
+  { title: "Check", detail: "Strict rules catch mistakes" },
+  { title: "Answer", detail: "A clear reply using your recent messages" },
+  { title: "Save", detail: "Kept in your chat history" },
 ];
 
+const SECTIONS = ["top", "features", "how"];
+
 export default function Landing() {
+  const active = useScrollSpy(SECTIONS);
+
   return (
     <div className="landing">
-      <header className="site-nav">
-        <div className="container nav-inner">
-          <Logo />
-          <nav className="nav-links" aria-label="Main">
-            <a href="#top" className="is-active">
-              Home
-            </a>
-            <a href="#features">Features</a>
-            <a href="#how">How it works</a>
-          </nav>
-          <div className="nav-actions">
-            <ThemeToggle />
-            <Link to="/chat" className="btn btn-primary btn-sm">
-              Get Started
-            </Link>
-          </div>
-        </div>
-      </header>
+      <SiteHeader active={active} />
 
-      <main id="top">
-        <section className="hero container">
+      <main>
+        <section id="top" className="hero container">
+          <div className="orb orb-lg hero-orb" aria-hidden="true" />
           <span className="pill">
-            <Sparkles size={14} /> Your intent-aware AI assistant <span className="pill-sep" /> v4.0
+            <Sparkles size={14} /> Your intent-aware AI assistant
           </span>
-          <h1>
-            Ask Anything. <span className="nowrap">Get Clear</span> Answers.
+          <h1 className="hero-brand">
+            Indigo<span className="hero-brand-ai">.ai</span>
           </h1>
+          <p className="hero-tagline">
+            Ask Anything. <span className="grad-text">Get Clear Answers.</span>
+          </p>
           <p className="hero-sub">
-            A personal AI workspace for customer-support questions. Every message is understood,
-            validated and answered in simple, organized conversations.
+            <strong>Indigo.ai</strong> is your personal AI workspace for everyday support questions. Every
+            message is understood, checked and answered in simple, organized conversations.
           </p>
           <div className="hero-actions">
             <Link to="/chat" className="btn btn-primary">
               Get Started <ArrowRight size={16} />
             </Link>
-            <a href="#features" className="btn btn-outline">
-              Explore Features <ChevronDown size={16} />
-            </a>
+            <Link to="/documentation" className="btn btn-outline">
+              <BookOpen size={16} /> Documentation
+            </Link>
           </div>
+          <button type="button" className="explore-link" onClick={() => scrollToSection("features")}>
+            Explore features <ChevronDown size={15} />
+          </button>
           <ul className="trust-row">
             <li>
               <ShieldCheck size={15} /> Validated output
@@ -226,7 +220,7 @@ export default function Landing() {
         </section>
 
         <section id="features" className="section container">
-          <span className="eyebrow-pill">What it does</span>
+          <span className="eyebrow-pill">Why Indigo.ai</span>
           <h2>Designed for focus and clarity</h2>
           <p className="section-sub">
             No noise, just the pieces you need: understand the question, answer it well, and keep
@@ -252,8 +246,8 @@ export default function Landing() {
               <span className="eyebrow">Under the hood</span>
               <h3>Every reply starts with understanding.</h3>
               <p>
-                Before answering, the assistant classifies your message into a fixed set of intents
-                and checks the result against a strict schema. Only validated data is used to write
+                Before answering, Indigo.ai classifies your message into a fixed set of intents
+                and checks the result against strict rules. Only checked information is used to write
                 the reply.
               </p>
               <div className="stats">
@@ -267,7 +261,7 @@ export default function Landing() {
                 </div>
                 <div>
                   <strong>2</strong>
-                  <span>LLM calls per reply</span>
+                  <span>AI steps per reply</span>
                 </div>
               </div>
             </div>
@@ -292,39 +286,24 @@ export default function Landing() {
             <span className="cta-icon">
               <MessagesSquare size={22} />
             </span>
-            <h2>Ready to Start a Conversation?</h2>
-            <p>Get answers, explore ideas, and keep every conversation organized with your personal assistant.</p>
+            <h2>
+              Ready to talk to <span className="grad-text">Indigo.ai</span>?
+            </h2>
+            <p>Get answers, explore ideas, and keep every conversation organized in one place.</p>
             <div className="hero-actions">
               <Link to="/chat" className="btn btn-primary">
                 Get Started <ArrowRight size={16} />
               </Link>
-              <a href={REPO_URL} target="_blank" rel="noreferrer" className="btn btn-soft">
+              <Link to="/documentation" className="btn btn-soft">
                 <BookOpen size={16} /> Read Documentation
-              </a>
+              </Link>
             </div>
-            <small>Runs locally · Chat history stays in backend/data/chat.db</small>
+            <small>Chats are saved so you can pick up where you left off · Use incognito for private chats</small>
           </div>
         </section>
       </main>
 
-      <footer className="site-footer">
-        <div className="container footer-inner">
-          <div className="footer-brand">
-            <Logo />
-            <p>An intent-aware assistant that understands, validates and answers support questions.</p>
-          </div>
-          <nav className="footer-links" aria-label="Footer">
-            <a href="#top">Home</a>
-            <a href="#features">Features</a>
-            <a href="#how">How it works</a>
-            <Link to="/chat">Open app</Link>
-          </nav>
-        </div>
-        <div className="container footer-bottom">
-          <span>© 2026 AI Assistant · Built for the AI Engineer workshop</span>
-          <span>FastAPI · Groq · React</span>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

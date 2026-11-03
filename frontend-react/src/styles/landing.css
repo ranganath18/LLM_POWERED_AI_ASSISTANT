@@ -1,9 +1,101 @@
 .landing {
   min-height: 100vh;
-  background:
-    radial-gradient(1000px 520px at 50% -120px, var(--primary-soft) 0%, transparent 70%),
-    var(--bg);
+  background: var(--backdrop); /* same lavender backdrop as the chat page */
+  background-attachment: fixed;
   overflow-x: hidden;
+}
+
+/* Smooth in-page navigation; sections stop below the sticky header */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+.landing [id] {
+  scroll-margin-top: 84px;
+}
+
+.nav-links a {
+  transition: color 0.15s, background 0.15s;
+}
+
+.nav-menu-btn {
+  display: none;
+}
+
+.nav-mobile {
+  display: none;
+}
+
+.explore-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 16px;
+  padding: 4px 8px;
+  border: none;
+  background: none;
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.explore-link:hover {
+  color: var(--text);
+}
+
+.explore-link svg {
+  transition: transform 0.2s;
+}
+
+.explore-link:hover svg {
+  transform: translateY(2px);
+}
+
+/* Big "Indigo.ai" wordmark: the hero's main heading */
+.landing .hero h1.hero-brand {
+  margin-top: 18px;
+  padding-bottom: 0.08em; /* room for descenders with background-clip:text */
+  background: linear-gradient(115deg, #4338ca 0%, #6a48f5 40%, #9373ff 70%, #c4b1ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-size: clamp(64px, 12vw, 128px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.055em;
+}
+
+[data-theme="dark"] .landing .hero h1.hero-brand {
+  background-image: linear-gradient(115deg, #a5b4fc 0%, #9b85ff 45%, #c4b1ff 80%, #e9e3ff 100%);
+}
+
+.hero-brand-ai {
+  opacity: 0.55;
+}
+
+.hero-tagline {
+  margin-top: 14px;
+  font-size: clamp(24px, 3.6vw, 38px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.hero-sub strong {
+  color: var(--text);
+}
+
+.hero-orb {
+  margin-bottom: 30px;
+}
+
+.grad-text {
+  background: linear-gradient(90deg, #b9a2ff, #7c5cff 55%, #a58bff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 /* ---------- Nav ---------- */
@@ -654,7 +746,8 @@
   }
 }
 
-@media (max-width: 680px) {
+/* Phones and small tablets: links move into a dropdown menu */
+@media (max-width: 860px) {
   .nav-links {
     display: none;
   }
@@ -662,6 +755,34 @@
   .nav-actions {
     margin-left: auto;
   }
+
+  .nav-menu-btn {
+    display: inline-grid;
+  }
+
+  .site-nav.is-open .nav-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-top: 4px;
+    padding-bottom: 14px;
+    animation: menu-in 0.15s ease-out;
+  }
+
+  .nav-mobile a {
+    padding: 11px 12px;
+    border-radius: 10px;
+    color: var(--text-2);
+    font-weight: 500;
+  }
+
+  .nav-mobile a.is-active {
+    background: var(--primary-soft);
+    color: var(--primary-text);
+  }
+}
+
+@media (max-width: 680px) {
 
   .hero {
     padding-top: 40px;
