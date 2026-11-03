@@ -1,4 +1,4 @@
-# Prompt Gate AI
+# LLM POWERED AI ASSISTANT
 
 An intent-based AI response generator for customer support.
 
