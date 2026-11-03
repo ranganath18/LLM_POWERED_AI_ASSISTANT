@@ -3,9 +3,12 @@ import { api } from "../lib/api.js";
 
 const CHECK_EVERY_MS = 15000;
 
-/** Polls GET /health. Returns "checking" | "online" | "offline". */
+/**
+ * Polls GET /health.
+ * Returns { status: "checking" | "online" | "offline", model: string | null }.
+ */
 export function useBackendStatus() {
-  const [status, setStatus] = useState("checking");
+  const [state, setState] = useState({ status: "checking", model: null });
 
   useEffect(() => {
     let active = true;
@@ -13,8 +16,8 @@ export function useBackendStatus() {
     const check = () =>
       api
         .health()
-        .then(() => active && setStatus("online"))
-        .catch(() => active && setStatus("offline"));
+        .then((health) => active && setState({ status: "online", model: health.model ?? null }))
+        .catch(() => active && setState((current) => ({ ...current, status: "offline" })));
 
     check();
     const timer = setInterval(check, CHECK_EVERY_MS);
@@ -24,5 +27,5 @@ export function useBackendStatus() {
     };
   }, []);
 
-  return status;
+  return state;
 }

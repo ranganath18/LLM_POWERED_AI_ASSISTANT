@@ -1,67 +1,95 @@
-import { ArrowUpRight, CheckCircle2, CreditCard, Lightbulb, Package, Sparkles } from "lucide-react";
+import { useState } from "react";
+import {
+  Compass,
+  EyeOff,
+  Ghost,
+  KeyRound,
+  Lightbulb,
+  ListChecks,
+  MessageSquareText,
+  PackageSearch,
+  PenLine,
+  RefreshCw,
+  ShieldCheck,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
 
-const STARTERS = [
-  {
-    icon: CreditCard,
-    tone: "violet",
-    title: "Sort out a payment",
-    prompt: "My payment was deducted twice. What should I do?",
-  },
-  {
-    icon: Package,
-    tone: "indigo",
-    title: "Track an order",
-    prompt: "Where is my order? It was due yesterday.",
-  },
-  {
-    icon: Lightbulb,
-    tone: "green",
-    title: "Ask anything",
-    prompt: "How can I reset my password?",
-  },
+// Everyday tasks the assistant handles well. Three are shown at random on each new chat.
+const STARTER_POOL = [
+  { icon: PenLine, title: "Write for me", prompt: "Write a short, polite email asking for a refund on a late order." },
+  { icon: Lightbulb, title: "Explain simply", prompt: "Explain how online card payments are kept secure, in simple words." },
+  { icon: ListChecks, title: "Make a checklist", prompt: "Give me a checklist for returning something I bought online." },
+  { icon: ShieldCheck, title: "Stay safe", prompt: "How can I tell if a payment message or link is a scam?" },
+  { icon: MessageSquareText, title: "Improve my message", prompt: "Make this sound more professional: \"where is my refund, it's been 2 weeks\"" },
+  { icon: Compass, title: "Compare options", prompt: "What's the difference between a refund and a chargeback?" },
+  { icon: KeyRound, title: "Fix an account issue", prompt: "I can't log in to my account. What should I try first?" },
+  { icon: PackageSearch, title: "Delivery problem", prompt: "My parcel says delivered but I don't have it. What should I do?" },
+  { icon: Sparkles, title: "Brainstorm", prompt: "Suggest 5 friendly ways to ask customer support for an update." },
 ];
 
-const CAPABILITIES = ["Intent detection", "Pydantic-validated output", "Remembers this conversation"];
+/** Three random starters, avoiding the ones currently shown when possible. */
+function pickStarters(current = []) {
+  const shownTitles = new Set(current.map((item) => item.title));
+  const fresh = STARTER_POOL.filter((item) => !shownTitles.has(item.title));
+  const source = fresh.length >= 3 ? fresh : STARTER_POOL;
+  return [...source].sort(() => Math.random() - 0.5).slice(0, 3);
+}
 
-export default function EmptyState({ onPick, disabled }) {
-  return (
-    <div className="empty-state">
-      <div className="empty-icon">
-        <Sparkles size={30} />
-        <span className="empty-icon-dot" />
+const INCOGNITO_FACTS = [
+  { icon: EyeOff, title: "Not saved", text: "This chat never reaches the database or your history." },
+  { icon: Trash2, title: "Gone when you leave", text: "Refreshing, leaving or turning incognito off deletes it." },
+  { icon: Ghost, title: "Still smart", text: "The assistant remembers this chat while it's open." },
+];
+
+/** Welcome screen for a new chat. `children` is the composer (and any error banner). */
+export default function EmptyState({ onPick, disabled, incognito, children }) {
+  const [starters, setStarters] = useState(() => pickStarters());
+
+  if (incognito) {
+    return (
+      <div className="welcome">
+        <div className="incognito-badge" aria-hidden="true">
+          <Ghost size={40} strokeWidth={1.6} />
+        </div>
+        <p className="welcome-hello is-muted">Incognito chat</p>
+        <h1 className="welcome-title">Nothing here will be saved.</h1>
+
+        <div className="welcome-composer">{children}</div>
+
+        <div className="prompt-cards">
+          {INCOGNITO_FACTS.map(({ icon: Icon, title, text }) => (
+            <div key={title} className="prompt-card is-static">
+              <Icon size={20} strokeWidth={1.8} className="prompt-card-icon" />
+              <strong>{title}</strong>
+              <span>{text}</span>
+            </div>
+          ))}
+        </div>
       </div>
-      <h2>What can I help you with?</h2>
-      <p>Ask a question about an order, a payment, or anything else to get started.</p>
+    );
+  }
 
-      <div className="starter-grid">
-        {STARTERS.map(({ icon: Icon, tone, title, prompt }) => (
-          <button
-            key={title}
-            type="button"
-            className="starter-card"
-            onClick={() => onPick(prompt)}
-            disabled={disabled}
-          >
-            <span className="starter-top">
-              <span className={`tile-icon tone-${tone}`}>
-                <Icon size={18} />
-              </span>
-              <ArrowUpRight size={18} className="starter-arrow" />
-            </span>
+  return (
+    <div className="welcome">
+      <div className="orb orb-lg" aria-hidden="true" />
+      <p className="welcome-hello">Hello there</p>
+      <h1 className="welcome-title">How can I assist you today?</h1>
+
+      <div className="welcome-composer">{children}</div>
+
+      <div className="prompt-cards">
+        {starters.map(({ icon: Icon, title, prompt }) => (
+          <button key={title} type="button" className="prompt-card" onClick={() => onPick(prompt)} disabled={disabled}>
+            <Icon size={20} strokeWidth={1.8} className="prompt-card-icon" />
             <strong>{title}</strong>
-            <span className="starter-example">e.g., {prompt}</span>
+            <span>{prompt}</span>
           </button>
         ))}
       </div>
-
-      <div className="capabilities">
-        <span>Capabilities:</span>
-        {CAPABILITIES.map((item) => (
-          <span key={item} className="capability-chip">
-            <CheckCircle2 size={14} /> {item}
-          </span>
-        ))}
-      </div>
+      <button type="button" className="shuffle-ideas" onClick={() => setStarters((current) => pickStarters(current))}>
+        <RefreshCw size={14} /> Show other ideas
+      </button>
     </div>
   );
 }
