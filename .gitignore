@@ -1,18 +1,31 @@
-# Python virtual environments
+# Secrets: any .env file, but KEEP the .env.example templates
+.env
+.env.*
+!.env.example
+
+# Python
 venv/
 .venv/
 **/venv/
 **/.venv/
-
-# Python cache files
 __pycache__/
 *.py[cod]
+.pytest_cache/
 
-# Environment variables and secrets
-.env
-.env.*
+# SQLite chat history (local data, never commit)
+backend/data/
+*.db
+*.db-wal
+*.db-shm
 
-# IDE and operating system files
+# Node / Vite
+node_modules/
+frontend-react/dist/
+
+# Deploy tool folders
+.vercel/
+
+# Editors and OS
 .vscode/
 .idea/
 .DS_Store

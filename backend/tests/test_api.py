@@ -249,3 +249,105 @@ def test_writing_in_an_archived_chat_restores_it(client):
 
 def test_archive_unknown_chat_returns_404(client):
     assert client.post(f"/api/conversations/{uuid4()}/archive").status_code == 404
+
+# ---------------------------------------------------------------------------
+# Production hardening (Week 4): CORS, health, and clean failures when the database is down
+# ---------------------------------------------------------------------------
+GOOD_ORIGIN = "http://localhost:5173"
+
+
+def _database_down(*args, **kwargs):
+    raise db.DatabaseUnavailable("down")
+
+
+def test_cors_allows_the_frontend_including_patch_for_rename(client):
+    response = client.options(
+        "/api/conversations/abc",
+        headers={"Origin": GOOD_ORIGIN, "Access-Control-Request-Method": "PATCH"},
+    )
+    assert response.headers.get("access-control-allow-origin") == GOOD_ORIGIN
+    assert "PATCH" in response.headers.get("access-control-allow-methods", "")
+
+
+def test_cors_blocks_other_websites(client):
+    response = client.options(
+        "/api/conversations",
+        headers={"Origin": "https://evil-site.com", "Access-Control-Request-Method": "GET"},
+    )
+    assert response.headers.get("access-control-allow-origin") is None
+
+
+def test_health_never_leaks_the_api_key(client, monkeypatch):
+    monkeypatch.setattr(main, "GROQ_API_KEY", "gsk_super_secret_value")
+    response = client.get("/health")
+    assert response.json()["groq_api_key_configured"] is True
+    assert "gsk_super_secret_value" not in response.text
+
+
+def test_health_returns_503_when_database_is_down(client, monkeypatch):
+    monkeypatch.setattr(main, "check_database", lambda: False)
+    response = client.get("/health")
+    assert response.status_code == 503
+    assert response.json()["status"] == "error"
+
+
+@pytest.mark.parametrize(
+    "method, path, patched",
+    [
+        ("get", "/api/conversations", "list_conversations"),
+        ("get", "/api/conversations/archived", "list_archived_conversations"),
+        ("get", f"/api/conversations/{uuid4()}/messages", "get_conversation_messages"),
+        ("post", f"/api/conversations/{uuid4()}/archive", "archive_conversation"),
+        ("delete", f"/api/conversations/{uuid4()}", "delete_conversation"),
+    ],
+)
+def test_conversation_routes_return_a_clean_503_when_database_is_down(client, monkeypatch, method, path, patched):
+    # get_conversation_messages also calls get_archive_status; make sure that path is covered too
+    monkeypatch.setattr(main, patched, _database_down)
+    monkeypatch.setattr(main, "get_archive_status", _database_down)
+    response = getattr(client, method)(path)
+    assert response.status_code == 503
+    assert "temporarily unavailable" in response.json()["detail"]
+    assert "down" not in response.json()["detail"].split("temporarily")[0]  # no internal detail
+
+
+def test_server_still_starts_when_the_database_is_unreachable(monkeypatch):
+    monkeypatch.setattr(main, "initialize_database", _database_down)
+    with TestClient(app) as test_client:
+        assert test_client.get("/").status_code == 200
+
+
+def test_stream_returns_503_when_history_cannot_be_loaded(client, monkeypatch):
+    monkeypatch.setattr(main, "analyze_message", fake_classify)
+    monkeypatch.setattr(main, "get_chat_history", _database_down)
+    response = client.post("/api/analyze/stream", json={"message": "hi"})
+    assert response.status_code == 503
+
+
+def test_incognito_stream_works_even_when_the_database_is_down(client, monkeypatch):
+    monkeypatch.setattr(main, "analyze_message", fake_classify)
+    monkeypatch.setattr(main, "stream_response", fake_stream_text("Still ", "works."))
+    monkeypatch.setattr(main, "get_chat_history", _database_down)
+    monkeypatch.setattr(main, "add_chat_message", _database_down)
+    events = read_events(client.post("/api/analyze/stream", json={"message": "hi", "incognito": True}))
+    assert events[-1]["type"] == "done"
+
+
+def test_stream_reports_a_database_error_when_saving_fails(client, monkeypatch):
+    monkeypatch.setattr(main, "analyze_message", fake_classify)
+    monkeypatch.setattr(main, "stream_response", fake_stream_text("Hello"))
+    monkeypatch.setattr(main, "add_chat_message", _database_down)
+    events = read_events(client.post("/api/analyze/stream", json={"message": "hi"}))
+    assert events[-1]["type"] == "error"
+    assert "temporarily unavailable" in events[-1]["detail"]
+
+
+def test_ai_failure_never_leaks_provider_details(client, monkeypatch):
+    def boom(message, usage=None):
+        raise RuntimeError("secret provider detail gsk_abc")
+
+    monkeypatch.setattr(main, "analyze_message", boom)
+    for path in ("/api/analyze", "/api/analyze/stream"):
+        response = client.post(path, json={"message": "hi"})
+        assert response.status_code == 502
+        assert "secret provider detail" not in response.text
