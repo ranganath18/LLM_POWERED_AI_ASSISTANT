@@ -8,7 +8,7 @@ export default function Logo({ to = "/" }) {
         <Sparkles size={16} strokeWidth={2.2} />
       </span>
       <span className="logo-text">
-        Indigo<span className="logo-accent">.ai</span>
+        IntentDesk<span classname="logo-accent">AI</span>
       </span>
     </Link>
   );

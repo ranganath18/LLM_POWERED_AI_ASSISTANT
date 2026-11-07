@@ -1,6 +1,6 @@
 # Frontend (React + Vite)
 
-The **Indigo.ai** web app: a landing page and a chat workspace, built with **React** and **Vite** in plain **JavaScript**. It talks to the FastAPI backend in `../backend`.
+The **IntentDesk AI** web app: a landing page and a chat workspace, built with **React** and **Vite** in plain **JavaScript**. It talks to the FastAPI backend in `../backend`.
 
 ## Run it
 

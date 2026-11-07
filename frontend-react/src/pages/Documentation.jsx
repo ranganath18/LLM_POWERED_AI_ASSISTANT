@@ -67,7 +67,7 @@ const FAQ = [
     a: "Yes, within 30 days. Open “Archived chats” at the bottom of the sidebar and click Restore. You can also click Undo right after deleting.",
   },
   {
-    q: "Does Indigo.ai remember earlier messages?",
+    q: "Does IntentDesk AI remember earlier messages?",
     a: "Yes, it uses the last 12 messages of the current chat, so follow-up questions like “what about the second one?” work.",
   },
   {
@@ -106,7 +106,7 @@ export default function Documentation() {
           <Sparkles size={14} /> Documentation
         </span>
         <h1>
-          Everything you need to <span className="grad-text">use Indigo.ai</span>
+          Everything you need to <span className="grad-text">use IntentDesk AI</span>
         </h1>
         <p>A short guide to what the app does, how to use it, and what happens to your data.</p>
       </header>
@@ -130,7 +130,7 @@ export default function Documentation() {
           <section id="overview" className="docs-section">
             <h2>Overview</h2>
             <p>
-              Indigo.ai is an AI assistant for customer-support questions. You ask a question in plain language: about a
+              IntentDesk AI is an AI assistant for customer-support questions. You ask a question in plain language: about a
               payment, an order, your account or anything else. It answers clearly, step by step.
             </p>
             <p>

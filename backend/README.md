@@ -2,9 +2,9 @@
 
 The Python part of the project. For each message it:
 
-1. **Classifies** it with an LLM and validates the result with Pydantic (Week 1)
-2. **Writes an answer** with a second LLM call (Week 2)
-3. **Remembers** the conversation in a SQLite database (Week 3)
+1. **Classifies** it with an LLM and validates the result with Pydantic
+2. **Writes an answer** with a second LLM call
+3. **Remembers** the conversation in a SQLite database
 
 All commands below are run from the `backend` folder with the virtual environment active (your prompt shows `(.venv)`).
 
@@ -35,7 +35,7 @@ ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 | `GROQ_API_KEY` | Yes | Your Groq key |
 | `GROQ_MODEL` | No | Groq model; defaults to `openai/gpt-oss-120b` |
 | `ALLOWED_ORIGINS` | No locally, **yes on Render** | Comma-separated websites allowed to call the API from a browser (CORS). Defaults to the Vite dev server. On Render, set it to your Vercel URL. |
-| `DATABASE_URL` | No locally, **recommended on Render** | PostgreSQL connection string (e.g. Neon). When set, chats are stored in PostgreSQL; when empty, in the SQLite file below. |
+| `DATABASE_URL` | No locally, **recommended on Render** | PostgreSQL connection string (e.g. Supabase). When set, chats are stored in PostgreSQL; when empty, in the SQLite file below. |
 | `SQLITE_PATH` | No | Where the SQLite file goes when `DATABASE_URL` is empty. Relative paths start from `backend/`. |
 
 - No quotes and no spaces around `=`.
@@ -54,7 +54,7 @@ uvicorn app.main:app --reload --port 8000
 
 | Open this | What you get |
 |---|---|
-| http://127.0.0.1:8000/ | `{"service": "Indigo.ai API", "status": "running"}` |
+| http://127.0.0.1:8000/ | `{"service": "IntentDesk AI API", "status": "running"}` |
 | http://127.0.0.1:8000/health | Status: `database_ok`, `groq_api_key_configured`, `model` |
 | http://127.0.0.1:8000/docs | Interactive page to try every endpoint |
 | http://127.0.0.1:8000/api/conversations | Your saved conversations |
@@ -69,7 +69,7 @@ Read them in this order; each builds on the one before.
 
 Loads `GROQ_API_KEY`, `GROQ_MODEL`, `SQLITE_PATH` and `ALLOWED_ORIGINS` from your `.env` file (or from Render's environment variables). A relative `SQLITE_PATH` is resolved from the `backend` folder, so the database lands in the same place no matter where you start the server.
 
-### 2. `app/schemas/ingestion.py`: Week 1 data rules
+### 2. `app/schemas/ingestion.py`: request and intent-result rules
 
 Defines what valid data looks like, using Pydantic:
 
@@ -88,7 +88,7 @@ Defines what valid data looks like, using Pydantic:
 
 `Literal[...]` is what restricts a field to a fixed list. `extra="forbid"` rejects any field we didn't define.
 
-### 3. `app/services/llm_service.py`: Week 1, classify the message
+### 3. `app/services/llm_service.py`: classify the message
 
 - A **system prompt** tells the LLM what each intent and risk level means.
 - **Instructor** wraps the Groq client so the reply must fit `IngestionResult`.
@@ -98,7 +98,7 @@ Defines what valid data looks like, using Pydantic:
 
 Counts roughly how many tokens the message is, using `tiktoken`. It's an estimate only, not Groq's real billing number.
 
-### 5. `app/schemas/assistant.py`: Week 2 data rules
+### 5. `app/schemas/assistant.py`: reply and token-usage schemas
 
 **`AssistantResult`** = everything in `IngestionResult` **plus**:
 
@@ -107,9 +107,9 @@ Counts roughly how many tokens the message is, using `tiktoken`. It's an estimat
 
 It inherits from `IngestionResult`, so we don't repeat the fields.
 
-### 6. `app/services/database_service.py`: Week 3, chat history (PostgreSQL or SQLite)
+### 6. `app/services/database_service.py`: chat history (PostgreSQL or SQLite)
 
-- **`DATABASE_URL` set** (production, e.g. a free Neon database): PostgreSQL via `psycopg`, with a small connection pool. Prepared statements are turned off because Neon's pooled endpoint doesn't support them, and connections are checked before use because Neon suspends idle databases.
+- **`DATABASE_URL` set** (production, e.g. a free Supabase database): PostgreSQL via `psycopg`, with a small connection pool. Prepared statements are turned off because Supabase's pooled endpoint doesn't support them, and connections are checked before use because Supabase suspends idle databases.
 - **`DATABASE_URL` empty** (local development, tests): Python's built-in `sqlite3` and a file, with nothing to install.
 
 The SQL is written once with `?` placeholders and converted to `%s` for PostgreSQL. `/health` reports which one is in use (`"database": "postgres"` or `"sqlite"`). Tests always use SQLite (see `tests/conftest.py`), so they never touch your real database. Two tables (see `sql/schema.sql`):
@@ -130,9 +130,9 @@ The SQL is written once with `?` placeholders and converted to `%s` for PostgreS
 
 Every query uses `?` placeholders, never string formatting, which protects against SQL injection.
 
-### 7. `app/services/response_service.py`: Week 2, write the answer
+### 7. `app/services/response_service.py`: write the answer
 
-- Takes the **validated** Week 1 result, the **recent history** and the **current message**.
+- Takes the **validated** intent result, the **recent history** and the **current message**.
 - Sends them to the LLM with a support-assistant prompt: be clear, use earlier messages to understand follow-ups like "that order", never ask for passwords/OTPs, don't pretend to take actions.
 - Returns the answer as Markdown. `temperature=0.3` lets the wording vary a little so it sounds natural.
 
@@ -144,11 +144,11 @@ Connects everything:
 POST /api/analyze
   → IngestionRequest checks the message (and session_id, if sent)
   → no session_id? create a new one
-  → analyze_message()        (Week 1)
+  → analyze_message()       
   → estimate_tokens()
-  → get_chat_history()       (Week 3)
-  → generate_response()      (Week 2, with history)
-  → add_chat_message() ×2    (Week 3: save user + assistant messages)
+  → get_chat_history()      
+  → generate_response()      (with history)
+  → add_chat_message() ×2    (save user + assistant messages)
   → returns AssistantResult
 ```
 
@@ -238,7 +238,7 @@ Deletes the conversation and all its messages. Returns `204`, or `404` if it doe
 ### `GET /`
 
 ```json
-{ "service": "Indigo.ai API", "status": "running" }
+{ "service": "IntentDesk AI API", "status": "running" }
 ```
 
 ### `GET /health`
@@ -246,7 +246,7 @@ Deletes the conversation and all its messages. Returns `204`, or `404` if it doe
 ```json
 {
   "status": "ok",
-  "message": "Indigo.ai API is running",
+  "message": "IntentDesk AI API is running",
   "database": "sqlite",
   "database_ok": true,
   "groq_api_key_configured": true,
@@ -344,8 +344,8 @@ Expected: `27 passed`.
 
 | File | Checks |
 |---|---|
-| `tests/test_ingestion.py` | Week 1 Pydantic rules (trimming, blank messages, invalid intent, valid data) |
-| `tests/test_database.py` | Week 3 SQLite storage (order of messages, 12-message limit, titles, invalid roles) using a temporary database |
+| `tests/test_ingestion.py` | Pydantic rules (trimming, blank messages, invalid intent, valid data) |
+| `tests/test_database.py` | SQLite storage (order of messages, 12-message limit, titles, invalid roles) using a temporary database |
 | `tests/test_api.py` | The endpoints: `/`, `/health` (no secrets leaked), conversations, rename/delete, archive/restore/30-day purge, invalid ids, bad input, streaming (event order, token counts, saving, errors) and incognito (nothing saved) |
 
 None of them call the LLM, so they work without an API key or internet.
@@ -354,7 +354,7 @@ None of them call the LLM, so they work without an API key or internet.
 
 ### `502 The AI request failed`
 
-The API hides the real reason, so call the Week 1 service directly to see it:
+The API hides the real reason, so call the classification service directly to see it:
 
 ```powershell
 python -c "from app.services.llm_service import analyze_message; print(analyze_message('Hi'))"
@@ -407,8 +407,6 @@ Or use **New → Blueprint**, which reads `render.yaml` in the repo root.
 ## Known limitations (good discussion topics)
 
 - If Instructor runs out of retries, it raises `InstructorRetryException`, not `ValidationError`, so you get the generic 502 instead of the detailed validation message.
-- The conversation row is created before the LLM is called, so a failed request can leave an empty conversation in the sidebar.
-- `token_metadata` is part of the schema sent to the LLM in Week 1, so the model may fill it in; the code overwrites the count afterwards.
+- `token_metadata` is part of the schema sent to the LLM, so the model may fill it in; the code overwrites the count afterwards.
 - A new Groq client and a new SQLite connection are created on every request. Simple, but not the fastest.
 - There are no user accounts or rate limits: anyone who can reach the API can read every conversation and use your Groq quota. CORS only stops other *websites*; it doesn't stop scripts or `curl`.
-- `app/services/conversation_service.py` is the old in-memory history from early Week 3 and is no longer used.

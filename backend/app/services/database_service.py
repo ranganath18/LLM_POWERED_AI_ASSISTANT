@@ -45,7 +45,7 @@ POSTGRES_SCHEMA = [
         content TEXT NOT NULL,
         created_at TEXT NOT NULL
     )""",
-    # Databases created before archiving existed (e.g. the Week 4 deploy) get the column here.
+    # Databases created before archiving existed (e.g. the first production deploy) get the column here.
     "ALTER TABLE conversations ADD COLUMN IF NOT EXISTS archived_at TEXT",
     "CREATE INDEX IF NOT EXISTS idx_messages_conversation_created ON messages(conversation_id, created_at)",
     "CREATE INDEX IF NOT EXISTS idx_conversations_archived ON conversations(archived_at)",
