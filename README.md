@@ -1,4 +1,4 @@
-# IntentDesk AI
+# LLM POWERED AI ASSISTANT
 
 An intent-aware AI assistant for customer support.
 
