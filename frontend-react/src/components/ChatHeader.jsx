@@ -52,7 +52,7 @@ export default function ChatHeader({
 
       <div className="model-chip" title={STATUS_TITLE[status]}>
         <span className="orb orb-xs" aria-hidden="true" />
-        <span className="model-name">{model ?? "Indigo.ai"}</span>
+        <span className="model-name">{model ?? "IntentDesk AI"}</span>
         <span className={`status-dot status-${status}`} />
       </div>
       {incognito && (

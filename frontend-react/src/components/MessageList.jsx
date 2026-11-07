@@ -32,7 +32,7 @@ function AssistantMessage({ message }) {
       <span className={`orb orb-sm ${streaming ? "is-thinking" : ""}`} aria-hidden="true" />
       <div className="assistant-body">
         <div className="assistant-head">
-          <span className="assistant-name">Indigo.ai</span>
+          <span className="assistant-name">IntentDesk AI</span>
           {analysis && <span className="intent-badge">{intentLabel(analysis.intent)}</span>}
           <span className="msg-time">{formatTime(message.createdAt)}</span>
         </div>

@@ -3,7 +3,7 @@
 # marked "sync: false" (they are secrets or depend on your Vercel URL).
 services:
   - type: web
-    name: prompt-gate-ai-backend
+    name: intentdesk-ai-backend
     runtime: python
     plan: free
     rootDir: backend
@@ -17,7 +17,7 @@ services:
         sync: false
       - key: GROQ_MODEL
         value: openai/gpt-oss-120b
-      # Your Vercel URL, no trailing slash. e.g. https://prompt-gate-ai.vercel.app
+      # Your Vercel URL, no trailing slash. e.g. https://intentdesk-ai.vercel.app
       - key: ALLOWED_ORIGINS
         sync: false
       # Supabase "Session pooler" connection string. Chats are stored there, so they

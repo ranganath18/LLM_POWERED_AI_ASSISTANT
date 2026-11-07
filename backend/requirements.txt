@@ -7,6 +7,6 @@ instructor==1.17.0
 pydantic==2.14.0
 python-dotenv==1.2.4
 tiktoken==0.14.0
-# PostgreSQL (Neon) driver + connection pool, used when DATABASE_URL is set
+# PostgreSQL (Supabase) driver + connection pool, used when DATABASE_URL is set
 psycopg[binary]==3.3.6
 psycopg-pool==3.3.3

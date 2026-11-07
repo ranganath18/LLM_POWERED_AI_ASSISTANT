@@ -19,7 +19,7 @@ export default function SiteFooter() {
         </nav>
       </div>
       <div className="container footer-bottom">
-        <span>© 2026 Indigo.ai. All rights reserved.</span>
+        <span>© 2026 IntentDesk AI. All rights reserved.</span>
         <Link to="/documentation">Help &amp; documentation</Link>
       </div>
     </footer>

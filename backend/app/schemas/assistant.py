@@ -38,7 +38,7 @@ class TokenUsage(BaseModel):
 
 
 class AssistantResult(IngestionResult):
-    """Week 2 response: intent analysis plus generated answer."""
+    """Intent analysis plus the generated answer."""
 
     session_id: str = Field(min_length=1,description="Conversation Session Identifier")
 

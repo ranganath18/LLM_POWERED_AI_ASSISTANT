@@ -8,7 +8,7 @@ const UNREACHABLE = "Can't reach the server right now. Please try again in a mom
 const UNEXPECTED = "Something went wrong. Please try again.";
 
 function logForDevelopers(hint) {
-  console.warn(`[Indigo.ai] ${hint}`);
+  console.warn(`[IntentDesk AI] ${hint}`);
 }
 
 function errorMessage(data, status) {

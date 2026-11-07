@@ -22,7 +22,7 @@ const HISTORY_LIMIT = 12; // Same as the backend's memory window.
 function downloadMarkdown(title, messages) {
   const lines = [`# ${title}`, ""];
   for (const message of messages) {
-    const who = message.role === "user" ? "You" : "Indigo.ai";
+    const who = message.role === "user" ? "You" : "IntentDesk AI";
     const when = message.createdAt ? ` · ${new Date(message.createdAt).toLocaleString()}` : "";
     lines.push(`### ${who}${when}`, "", message.content, "");
   }
@@ -383,9 +383,9 @@ export default function Chat() {
       (messages[0]?.content.slice(0, 60) || "New chat"));
 
   useEffect(() => {
-    document.title = `${title} · Indigo.ai`;
+    document.title = `${title} · IntentDesk AI`;
     return () => {
-      document.title = "Indigo.ai";
+      document.title = "IntentDesk AI";
     };
   }, [title]);
 

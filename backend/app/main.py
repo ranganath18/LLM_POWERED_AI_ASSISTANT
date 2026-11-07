@@ -52,7 +52,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Indigo.ai API",
+    title="IntentDesk AI API",
     description="AI-powered message analysis and contextual assistance.",
     version="4.0.0",
     lifespan=lifespan,
@@ -95,7 +95,7 @@ def health_check(response: Response):
         response.status_code = 503
     return {
         "status": "ok" if database_ok else "error",
-        "message": "Indigo.ai API is running",
+        "message": "IntentDesk AI API is running",
         "database": database_kind(),
         "database_ok": database_ok,
         "groq_api_key_configured": bool(GROQ_API_KEY),  # true/false only, never the key

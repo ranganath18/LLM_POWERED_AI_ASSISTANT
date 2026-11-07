@@ -43,7 +43,7 @@ def client(tmp_path, monkeypatch):
 
 def test_root_does_not_expose_the_api(client):
     body = client.get("/").json()
-    assert body == {"service": "Indigo.ai API", "status": "running"}
+    assert body == {"service": "IntentDesk AI API", "status": "running"}
     assert "/api/" not in str(body)
 
 
@@ -251,7 +251,7 @@ def test_archive_unknown_chat_returns_404(client):
     assert client.post(f"/api/conversations/{uuid4()}/archive").status_code == 404
 
 # ---------------------------------------------------------------------------
-# Production hardening (Week 4): CORS, health, and clean failures when the database is down
+# Production hardening: CORS, health, and clean failures when the database is down
 # ---------------------------------------------------------------------------
 GOOD_ORIGIN = "http://localhost:5173"
 
